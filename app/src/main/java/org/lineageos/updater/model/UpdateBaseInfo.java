@@ -18,4 +18,8 @@ public interface UpdateBaseInfo {
     String getDownloadUrl();
 
     long getFileSize();
+
+    String getChangelog();
+
+    String getChangelogUrl();
 }

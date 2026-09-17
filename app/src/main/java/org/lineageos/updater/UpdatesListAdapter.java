@@ -4,10 +4,12 @@
  */
 package org.lineageos.updater;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.PowerManager;
 import android.text.SpannableString;
@@ -40,6 +42,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.lineageos.updater.controller.UpdaterController;
 import org.lineageos.updater.controller.UpdaterService;
+import org.lineageos.updater.misc.Changelog;
 import org.lineageos.updater.misc.Constants;
 import org.lineageos.updater.misc.StringGenerator;
 import org.lineageos.updater.misc.Utils;
@@ -543,6 +546,7 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
         menu.findItem(R.id.menu_delete_action).setVisible(shouldShowDelete);
         menu.findItem(R.id.menu_copy_url).setVisible(update.getAvailableOnline());
         menu.findItem(R.id.menu_export_update).setVisible(isVerified);
+        menu.findItem(R.id.menu_show_whats_new).setVisible(update.getChangelog() != null);
 
         popupMenu.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
@@ -560,12 +564,43 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
                     mActivity.exportUpdate(update);
                 }
                 return true;
+            } else if (itemId == R.id.menu_show_whats_new) {
+                showChangelogDialog(update);
+                return true;
             }
             return false;
         });
 
         MenuPopupHelper helper = new MenuPopupHelper(wrapper, menu, anchor);
         helper.show();
+    }
+
+    private void showChangelogDialog(UpdateInfo update) {
+        String changelog = update.getChangelog();
+        if (changelog == null) {
+            return;
+        }
+        String title = mActivity.getString(R.string.list_build_version_date,
+                update.getVersion(),
+                StringGenerator.getDateLocalizedUTC(mActivity, DateFormat.MEDIUM,
+                        update.getTimestamp()));
+        String url = update.getChangelogUrl() != null
+                ? update.getChangelogUrl() : Utils.getChangelogURL(mActivity);
+        if (infoDialog != null) {
+            infoDialog.dismiss();
+        }
+        infoDialog = new AlertDialog.Builder(mActivity)
+                .setTitle(title)
+                .setMessage(Changelog.prettify(changelog))
+                .setPositiveButton(android.R.string.ok, null)
+                .setNeutralButton(R.string.menu_full_changelog, (dialog, which) -> {
+                    try {
+                        mActivity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                    } catch (ActivityNotFoundException | IllegalArgumentException e) {
+                        Log.e(TAG, "Could not open changelog URL " + url, e);
+                    }
+                })
+                .show();
     }
 
     private void showInfoDialog() {

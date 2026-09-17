@@ -70,7 +70,19 @@ public class Utils {
         update.setFileSize(object.getLong("size"));
         update.setDownloadUrl(object.getString("url"));
         update.setVersion(object.getString("version"));
+        // Optional keys (pepito feed). Must never throw or drop the entry: a feed
+        // without them, or with an odd value, is still a valid update list.
+        update.setChangelog(optNonBlankString(object, "changelog"));
+        update.setChangelogUrl(optNonBlankString(object, "changelog_url"));
         return update;
+    }
+
+    private static String optNonBlankString(JSONObject object, String key) {
+        if (object.isNull(key)) {
+            return null;
+        }
+        String value = object.optString(key, "");
+        return value.trim().isEmpty() ? null : value;
     }
 
     public static boolean isCompatible(UpdateBaseInfo update) {

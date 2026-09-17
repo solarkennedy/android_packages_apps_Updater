@@ -13,6 +13,8 @@ public class UpdateBase implements UpdateBaseInfo {
     private String mType;
     private String mVersion;
     private long mFileSize;
+    private String mChangelog;
+    private String mChangelogUrl;
 
     public UpdateBase() {
     }
@@ -25,6 +27,8 @@ public class UpdateBase implements UpdateBaseInfo {
         mType = update.getType();
         mVersion = update.getVersion();
         mFileSize = update.getFileSize();
+        mChangelog = update.getChangelog();
+        mChangelogUrl = update.getChangelogUrl();
     }
 
     @Override
@@ -88,5 +92,27 @@ public class UpdateBase implements UpdateBaseInfo {
 
     public void setFileSize(long fileSize) {
         mFileSize = fileSize;
+    }
+
+    /**
+     * Optional release notes for this build, or null when the feed carries none.
+     * Never persisted: it is reconstituted from the cached JSON on every parse.
+     */
+    @Override
+    public String getChangelog() {
+        return mChangelog;
+    }
+
+    public void setChangelog(String changelog) {
+        mChangelog = changelog;
+    }
+
+    @Override
+    public String getChangelogUrl() {
+        return mChangelogUrl;
+    }
+
+    public void setChangelogUrl(String changelogUrl) {
+        mChangelogUrl = changelogUrl;
     }
 }

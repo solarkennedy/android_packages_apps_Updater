@@ -328,6 +328,14 @@ public class UpdaterController {
                 Update updateAdded = entry.mUpdate;
                 updateAdded.setAvailableOnline(availableOnline && updateAdded.getAvailableOnline());
                 updateAdded.setDownloadUrl(updateInfo.getDownloadUrl());
+                // Entries restored from the database carry no changelog; pick it
+                // up from the freshly parsed feed.
+                if (updateInfo.getChangelog() != null) {
+                    updateAdded.setChangelog(updateInfo.getChangelog());
+                }
+                if (updateInfo.getChangelogUrl() != null) {
+                    updateAdded.setChangelogUrl(updateInfo.getChangelogUrl());
+                }
             }
             return false;
         }
