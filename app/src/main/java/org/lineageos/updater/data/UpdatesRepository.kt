@@ -54,7 +54,18 @@ class UpdatesRepository(
         }
 
         val networkUpdates = withContext(Dispatchers.IO) {
-            networkDataSource.fetchUpdates().map { it.toUpdate() }.filter { filterUpdates(it) }
+            val fetched = networkDataSource.fetchUpdates()
+            ChangelogStore.replace(
+                fetched.mapNotNull { update ->
+                    update.changelog?.takeIf { it.isNotBlank() }?.let { text ->
+                        update.files[0].sha256 to ChangelogStore.Entry(
+                            text = text,
+                            url = update.changelogUrl?.takeIf { it.isNotBlank() },
+                        )
+                    }
+                }.toMap()
+            )
+            fetched.map { it.toUpdate() }.filter { filterUpdates(it) }
         }
 
         if (networkUpdates.isEmpty()) return System.currentTimeMillis()

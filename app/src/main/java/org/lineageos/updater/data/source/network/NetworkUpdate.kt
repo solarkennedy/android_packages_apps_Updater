@@ -26,6 +26,9 @@ data class NetworkUpdate(
     @SerialName("files") val files: List<NetworkUpdateFile>,
     @SerialName("type") val type: String,
     @SerialName("version") val version: String,
+    // pepito feed: optional per-build release notes, see data/ChangelogStore.kt
+    @SerialName("changelog") val changelog: String? = null,
+    @SerialName("changelog_url") val changelogUrl: String? = null,
 )
 
 @Suppress("PROVIDED_RUNTIME_TOO_LOW")
