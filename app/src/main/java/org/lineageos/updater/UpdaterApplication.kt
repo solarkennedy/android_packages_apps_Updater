@@ -11,6 +11,7 @@ import com.android.settingslib.spa.framework.common.SpaEnvironment
 import com.android.settingslib.spa.framework.common.SpaEnvironmentFactory
 import kotlinx.coroutines.MainScope
 import org.lineageos.updater.data.AppStateRepository
+import org.lineageos.updater.data.ChangelogStore
 import org.lineageos.updater.data.UpdatesRepository
 import org.lineageos.updater.data.UserPreferencesRepository
 import org.lineageos.updater.data.source.local.UpdatesDatabase
@@ -45,6 +46,7 @@ class UpdaterApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        ChangelogStore.init(applicationContext)
         notificationHelper.setUpNotificationChannels()
         SpaEnvironmentFactory.reset(object : SpaEnvironment(applicationContext) {
             override val pageProviderRepository = lazy {

@@ -18,6 +18,7 @@ import org.lineageos.updater.R
 import org.lineageos.updater.UpdaterApplication
 import org.lineageos.updater.controller.UpdaterController
 import org.lineageos.updater.controller.UpdaterService
+import org.lineageos.updater.data.ChangelogStore
 import org.lineageos.updater.data.Update
 import org.lineageos.updater.deviceinfo.DeviceInfoUtils
 import org.lineageos.updater.misc.Utils
@@ -172,6 +173,30 @@ class UpdateActionHandler(
                     AlertDialogState(
                         title = title,
                         text = message,
+                    )
+                )
+            }
+
+            UpdateActionType.SHOW_CHANGELOG -> {
+                val entry = ChangelogStore.get(downloadId) ?: return
+                showDialog(
+                    AlertDialogState(
+                        title = activity.getString(R.string.action_whats_new),
+                        text = buildAnnotatedString {
+                            append(entry.text.trim())
+                            entry.url?.let { url ->
+                                append("\n\n")
+                                val label = activity.getString(R.string.whats_new_full_changelog)
+                                val start = length
+                                append(label)
+                                addStyle(
+                                    style = SpanStyle(textDecoration = TextDecoration.Underline),
+                                    start = start,
+                                    end = length,
+                                )
+                                addLink(LinkAnnotation.Url(url), start, length)
+                            }
+                        },
                     )
                 )
             }

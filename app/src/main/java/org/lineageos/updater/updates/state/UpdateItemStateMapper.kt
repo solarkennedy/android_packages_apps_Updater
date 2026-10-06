@@ -10,6 +10,7 @@ import android.os.Build
 import android.text.format.Formatter
 import org.lineageos.updater.R
 import org.lineageos.updater.controller.UpdaterController
+import org.lineageos.updater.data.ChangelogStore
 import org.lineageos.updater.data.Update
 import org.lineageos.updater.data.UpdateStatus
 import org.lineageos.updater.deviceinfo.DeviceInfoUtils
@@ -153,6 +154,9 @@ class UpdateItemStateMapper(
             primary = buttonActions.primary,
             secondary = buttonActions.secondary,
             overflow = buildList {
+                if (ChangelogStore.get(update.downloadId) != null) {
+                    add(action(UpdateActionType.SHOW_CHANGELOG))
+                }
                 if (state.canExport) {
                     add(action(UpdateActionType.EXPORT, enabled = !state.isBusy))
                 }
