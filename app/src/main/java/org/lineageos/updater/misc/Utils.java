@@ -77,6 +77,27 @@ public class Utils {
         return update;
     }
 
+    /**
+     * One entry of a LineageOS API-v2 feed:
+     * {"datetime", "type", "version", "files": [{"filename", "sha256", "size", "url", ...}]}.
+     * The download id is the file's sha256, which is also what the legacy feed's "id"
+     * carries, so an update keeps its id when the feed changes shape.
+     */
+    private static UpdateInfo parseJsonUpdateV2(JSONObject object) throws JSONException {
+        JSONObject file = object.getJSONArray("files").getJSONObject(0);
+        Update update = new Update();
+        update.setTimestamp(object.getLong("datetime"));
+        update.setName(file.getString("filename"));
+        update.setDownloadId(file.getString("sha256"));
+        update.setType(object.getString("type"));
+        update.setFileSize(file.getLong("size"));
+        update.setDownloadUrl(file.getString("url"));
+        update.setVersion(object.getString("version"));
+        update.setChangelog(optNonBlankString(object, "changelog"));
+        update.setChangelogUrl(optNonBlankString(object, "changelog_url"));
+        return update;
+    }
+
     private static String optNonBlankString(JSONObject object, String key) {
         if (object.isNull(key)) {
             return null;
@@ -141,14 +162,22 @@ public class Utils {
             }
         }
 
-        JSONObject obj = new JSONObject(json.toString());
-        JSONArray updatesList = obj.getJSONArray("response");
+        // Two feed shapes. The legacy one is {"response": [{flat entry}, ...]}. The
+        // LineageOS API-v2 one, which the 24.0 (Android 17) Updater reads, is a
+        // top-level array of entries whose file details sit in "files". Reading v2
+        // here lets the last 23.2 build follow the 24.0 feed for the major upgrade.
+        String text = json.toString().trim();
+        final boolean v2 = text.startsWith("[");
+        JSONArray updatesList = v2
+                ? new JSONArray(text)
+                : new JSONObject(text).getJSONArray("response");
         for (int i = 0; i < updatesList.length(); i++) {
             if (updatesList.isNull(i)) {
                 continue;
             }
             try {
-                UpdateInfo update = parseJsonUpdate(updatesList.getJSONObject(i));
+                JSONObject entry = updatesList.getJSONObject(i);
+                UpdateInfo update = v2 ? parseJsonUpdateV2(entry) : parseJsonUpdate(entry);
                 if (!compatibleOnly || isCompatible(update)) {
                     updates.add(update);
                 } else {
