@@ -5,11 +5,7 @@
 
 package org.lineageos.updater.updates.action
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
-import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -46,11 +42,9 @@ fun UpdateActionDialog(
             null
         },
         title = dialog.title,
-        // Scrolls so long release notes ("What's new") fit; short messages are unaffected.
-        text = {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                Text(text = dialog.text)
-            }
-        },
+        // SettingsAlertDialogText already scrolls the text, so long release notes
+        // ("What's new") fit. Don't add a scroller here: nesting one throws an
+        // IllegalStateException as soon as the dialog is measured.
+        text = { Text(text = dialog.text) },
     )
 }
